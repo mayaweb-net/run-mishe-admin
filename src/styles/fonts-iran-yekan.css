@@ -1,0 +1,19 @@
+@font-face {
+  font-family: iran-yekan;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src:
+    url("/fonts/iran-yekan/woff2/IRANYekanXVF.woff") format("woff"),
+    url("/fonts/iran-yekan/IRANYekanXVF.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: iran-yekan-fanum;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src:
+    url("/fonts/iran-yekan/IRANYekanXVFaNumVF.woff2") format("woff2"),
+    url("/fonts/iran-yekan/IRANYekanXVFaNumVF.woff") format("woff");
+}
