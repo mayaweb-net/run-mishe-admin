@@ -48,7 +48,7 @@ export function Logo({
           <span
             className={cn(
               "block truncate text-base font-semibold leading-tight",
-              onDark ? "text-white" : "text-foreground",
+              onDark ? "text-admin-sidebar-foreground" : "text-foreground",
             )}
           >
             {siteConfig.shortName}
@@ -57,7 +57,7 @@ export function Logo({
             <span
               className={cn(
                 "block truncate text-[10px]",
-                onDark ? "text-white/55" : "text-muted-foreground",
+                onDark ? "text-admin-sidebar-subtle" : "text-muted-foreground",
               )}
             >
               {subtitle}

@@ -1,0 +1,204 @@
+/* Run Mishe design tokens — Figma / Tailwind / shadcn */
+
+@theme inline {
+  /* Base */
+  --color-white: #ffffff;
+  --color-black: var(--color-neutral-950);
+
+  /* Neutral shorthand (Figma neutral 1–5) */
+  --color-neutral-1: var(--color-neutral-50);
+  --color-neutral-2: var(--color-neutral-100);
+  --color-neutral-3: var(--color-neutral-200);
+  --color-neutral-4: var(--color-neutral-400);
+  --color-neutral-5: var(--color-neutral-500);
+
+  /* Primary scale 1–12 → neutral ramp */
+  --color-primary-1: var(--color-neutral-50);
+  --color-primary-2: var(--color-neutral-100);
+  --color-primary-3: var(--color-neutral-200);
+  --color-primary-4: var(--color-neutral-300);
+  --color-primary-5: var(--color-neutral-400);
+  --color-primary-6: var(--color-neutral-500);
+  --color-primary-7: var(--color-neutral-600);
+  --color-primary-8: var(--color-neutral-700);
+  --color-primary-9: var(--color-neutral-800);
+  --color-primary-10: var(--color-neutral-900);
+  --color-primary-11: var(--color-neutral-950);
+  --color-primary-12: var(--color-neutral-950);
+
+  /* Secondary scale 1–12 → cyan ramp */
+  --color-secondary-1: var(--color-cyan-50);
+  --color-secondary-2: var(--color-cyan-100);
+  --color-secondary-3: var(--color-cyan-200);
+  --color-secondary-4: var(--color-cyan-300);
+  --color-secondary-5: var(--color-cyan-400);
+  --color-secondary-6: var(--color-cyan-500);
+  --color-secondary-7: var(--color-cyan-600);
+  --color-secondary-8: var(--color-cyan-700);
+  --color-secondary-9: var(--color-cyan-800);
+  --color-secondary-10: var(--color-cyan-900);
+  --color-secondary-11: var(--color-cyan-950);
+  --color-secondary-12: var(--color-cyan-950);
+
+  /* Brand / status */
+  --color-primary-bg: var(--color-blue-100);
+  --color-red: var(--color-red-600);
+  --color-success: #2b9a66;
+  --color-success-bg: #faf9f9;
+  --color-warning: #ffc107;
+  --color-warning-bg: #fffaed;
+  --color-destructive-bg: #fff2f2;
+
+  /* shadcn semantic → utilities */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Admin panel — dark sidebar */
+  --color-admin-sidebar: var(--admin-sidebar);
+  --color-admin-sidebar-foreground: var(--admin-sidebar-foreground);
+  --color-admin-sidebar-muted: var(--admin-sidebar-muted);
+  --color-admin-sidebar-subtle: var(--admin-sidebar-subtle);
+  --color-admin-sidebar-border: var(--admin-sidebar-border);
+  --color-admin-sidebar-hover: var(--admin-sidebar-hover);
+  --color-admin-sidebar-surface: var(--admin-sidebar-surface);
+  --color-admin-sidebar-active-border: var(--admin-sidebar-active-border);
+  --color-admin-sidebar-active-bg: var(--admin-sidebar-active-bg);
+  --color-admin-sidebar-active-text: var(--admin-sidebar-active-text);
+  --color-admin-sidebar-nav: var(--admin-sidebar-nav);
+}
+
+:root {
+  /* Surfaces */
+  --background: color-mix(in oklab, var(--color-neutral-950) 5%, white);
+  --foreground: var(--color-neutral-950);
+  --card: #ffffff;
+  --card-foreground: var(--color-neutral-950);
+  --popover: #ffffff;
+  --popover-foreground: var(--color-neutral-950);
+
+  /* Brand */
+  --primary: var(--color-primary-8);
+  --primary-foreground: #ffffff;
+  --primary-bg: var(--color-blue-100);
+  --secondary: var(--color-secondary-2);
+  --secondary-foreground: var(--color-neutral-950);
+
+  /* UI */
+  --muted: var(--color-neutral-100);
+  --muted-foreground: var(--color-neutral-500);
+  --accent: var(--color-purple-600);
+  --accent-foreground: var(--color-neutral-900);
+  --destructive: #e54b4b;
+  --destructive-bg: #fff2f2;
+  --success: #2b9a66;
+  --success-bg: #faf9f9;
+  --warning: #ffc107;
+  --warning-bg: #fffaed;
+  --border: var(--color-neutral-200);
+  --input: var(--color-neutral-200);
+  --ring: var(--color-neutral-500);
+
+  /* Charts */
+  --chart-1: var(--color-secondary-6);
+  --chart-2: var(--color-primary-8);
+  --chart-3: var(--color-purple-600);
+  --chart-4: var(--color-warning);
+  --chart-5: var(--color-success);
+
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--color-neutral-950);
+  --sidebar-primary: var(--color-neutral-900);
+  --sidebar-primary-foreground: var(--color-neutral-50);
+  --sidebar-accent: var(--color-neutral-100);
+  --sidebar-accent-foreground: var(--color-neutral-900);
+  --sidebar-border: var(--color-neutral-200);
+  --sidebar-ring: var(--color-neutral-500);
+
+  /* Admin panel — dark sidebar (maps to primary scale + secondary accent) */
+  --admin-sidebar: var(--color-primary-9);
+  --admin-sidebar-foreground: var(--color-white);
+  --admin-sidebar-muted: color-mix(in oklab, white 65%, transparent);
+  --admin-sidebar-subtle: color-mix(in oklab, white 55%, transparent);
+  --admin-sidebar-border: color-mix(in oklab, white 10%, transparent);
+  --admin-sidebar-hover: color-mix(in oklab, white 8%, transparent);
+  --admin-sidebar-surface: color-mix(in oklab, white 6%, transparent);
+  --admin-sidebar-nav: color-mix(in oklab, white 75%, transparent);
+  --admin-sidebar-active-border: color-mix(
+    in oklab,
+    var(--color-secondary-6) 40%,
+    transparent
+  );
+  --admin-sidebar-active-bg: color-mix(
+    in oklab,
+    var(--color-secondary-6) 15%,
+    transparent
+  );
+  --admin-sidebar-active-text: var(--color-secondary-4);
+}
+
+.dark {
+  --background: var(--color-neutral-950);
+  --foreground: var(--color-neutral-50);
+  --card: var(--color-neutral-900);
+  --card-foreground: var(--color-neutral-50);
+  --popover: var(--color-neutral-900);
+  --popover-foreground: var(--color-neutral-50);
+  --primary: var(--color-neutral-50);
+  --primary-foreground: var(--color-neutral-900);
+  --primary-bg: color-mix(in oklab, var(--color-blue-400) 15%, var(--color-neutral-900));
+  --secondary: var(--color-cyan-950);
+  --secondary-foreground: var(--color-neutral-50);
+  --muted: var(--color-neutral-800);
+  --muted-foreground: var(--color-neutral-400);
+  --accent: var(--color-purple-400);
+  --accent-foreground: var(--color-neutral-50);
+  --destructive: #e54b4b;
+  --destructive-bg: color-mix(in oklab, #e54b4b 12%, var(--color-neutral-950));
+  --success: #2b9a66;
+  --success-bg: color-mix(in oklab, #2b9a66 12%, var(--color-neutral-950));
+  --warning: #ffc107;
+  --warning-bg: color-mix(in oklab, #ffc107 12%, var(--color-neutral-950));
+  --border: color-mix(in oklab, white 12%, transparent);
+  --input: color-mix(in oklab, white 15%, transparent);
+  --ring: var(--color-neutral-500);
+  --sidebar: var(--color-neutral-900);
+  --sidebar-foreground: var(--color-neutral-50);
+  --sidebar-primary: var(--color-neutral-50);
+  --sidebar-primary-foreground: var(--color-neutral-900);
+  --sidebar-accent: var(--color-neutral-800);
+  --sidebar-accent-foreground: var(--color-neutral-50);
+  --sidebar-border: color-mix(in oklab, white 12%, transparent);
+  --sidebar-ring: var(--color-neutral-500);
+}

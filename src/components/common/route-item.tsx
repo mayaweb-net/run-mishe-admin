@@ -7,6 +7,11 @@ import {
   routeKey,
   type AdminRoute,
 } from "@/config/routes";
+import {
+  adminSidebarNavItem,
+  adminSidebarNavItemActive,
+  adminSidebarNavItemGroupActive,
+} from "@/lib/admin-sidebar-styles";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 
@@ -15,6 +20,9 @@ interface RouteItemProps {
   collapsed?: boolean;
   depth?: number;
 }
+
+const navBase =
+  "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm font-medium transition-colors";
 
 export function RouteItem({
   route,
@@ -45,9 +53,7 @@ export function RouteItem({
           onClick={() => setDrawerOpen(false)}
           className={cn(
             "flex items-center justify-center rounded-lg border px-2 py-1.5 text-sm font-medium transition-colors",
-            groupActive
-              ? "border-white/30 bg-white/15 text-white"
-              : "border-transparent text-white/75 hover:bg-white/8 hover:text-white",
+            groupActive ? adminSidebarNavItemActive : adminSidebarNavItem,
           )}
         >
           <route.icon className="size-4 shrink-0" />
@@ -61,10 +67,9 @@ export function RouteItem({
           type="button"
           onClick={() => setOpen((current) => !current)}
           className={cn(
-            "flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm font-medium transition-colors",
-            groupActive
-              ? "border-white/20 bg-white/10 text-white"
-              : "border-transparent text-white/75 hover:bg-white/8 hover:text-white",
+            "flex w-full",
+            navBase,
+            groupActive ? adminSidebarNavItemGroupActive : adminSidebarNavItem,
           )}
         >
           <route.icon className="size-4 shrink-0" />
@@ -80,7 +85,7 @@ export function RouteItem({
         </button>
 
         {open ? (
-          <div className="ms-3 flex flex-col gap-1 border-s border-white/10 ps-2">
+          <div className="ms-3 flex flex-col gap-1 border-s border-admin-sidebar-border ps-2">
             {children.map((child) => (
               <RouteItem
                 key={routeKey(child)}
@@ -103,12 +108,10 @@ export function RouteItem({
       title={collapsed ? route.label : undefined}
       onClick={() => setDrawerOpen(false)}
       className={cn(
-        "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm font-medium transition-colors",
+        navBase,
         collapsed && "justify-center px-2",
         depth > 0 && !collapsed && "py-1.5 text-[13px]",
-        leafActive
-          ? "border-white/30 bg-white/15 text-white"
-          : "border-transparent text-white/75 hover:bg-white/8 hover:text-white",
+        leafActive ? adminSidebarNavItemActive : adminSidebarNavItem,
       )}
     >
       <route.icon className="size-4 shrink-0" />

@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { LoginPage } from "@/pages/login-page";
+import { NotFoundPage } from "@/pages/not-found-page";
 import { PagePlaceholder } from "@/pages/page-placeholder";
 
 function AdminLayout() {
@@ -29,7 +30,7 @@ export function App() {
         />
       </Route>
       <Route path="/logout" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
