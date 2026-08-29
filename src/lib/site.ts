@@ -4,4 +4,5 @@ export const siteConfig = {
   description: "پنل مدیریت پلتفرم ران می‌شه",
   logo: "/img/logo.svg",
   themeColor: "#242424",
+  sidebarBg: "#242424",
 } as const;
