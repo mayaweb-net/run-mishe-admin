@@ -1,5 +1,9 @@
 import {
   CalendarDays,
+  Cpu,
+  Gamepad2,
+  Gpu,
+  HardDrive,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -28,6 +32,32 @@ export const adminRoutes: AdminRoute[] = [
     label: "رویدادها",
     icon: CalendarDays,
     showInSidebar: true,
+  },
+  {
+    href: "/games",
+    label: "بازی‌ها",
+    icon: Gamepad2,
+    showInSidebar: true,
+  },
+  {
+    id: "parts",
+    label: "قطعات",
+    icon: HardDrive,
+    showInSidebar: true,
+    children: [
+      {
+        href: "/parts/cpu",
+        label: "CPU",
+        icon: Cpu,
+        showInSidebar: true,
+      },
+      {
+        href: "/parts/gpu",
+        label: "GPU",
+        icon: Gpu,
+        showInSidebar: true,
+      },
+    ],
   },
   {
     href: "/users",
