@@ -3,6 +3,11 @@ import { MainLayout } from "@/components/layouts/main-layout";
 import { LoginPage } from "@/pages/login-page";
 import { NotFoundPage } from "@/pages/not-found-page";
 import { PagePlaceholder } from "@/pages/page-placeholder";
+import { BenchmarkDefinitionsPage } from "@/pages/benchmarks/definitions-list-page";
+import {
+  CpuBenchmarkScoresPage,
+  GpuBenchmarkScoresPage,
+} from "@/pages/benchmarks/scores-list-page";
 import { GameDetailPage } from "@/pages/games/game-detail-page";
 import { GameListPage } from "@/pages/games/game-list-page";
 import { CpuListPage } from "@/pages/parts/cpu-list-page";
@@ -35,6 +40,22 @@ export function App() {
         <Route path="/parts/cpu/:id" element={<CpuDetailPage />} />
         <Route path="/parts/gpu" element={<GpuListPage />} />
         <Route path="/parts/gpu/:id" element={<GpuDetailPage />} />
+        <Route
+          path="/benchmarks"
+          element={<Navigate to="/benchmarks/definitions" replace />}
+        />
+        <Route
+          path="/benchmarks/definitions"
+          element={<BenchmarkDefinitionsPage />}
+        />
+        <Route
+          path="/benchmarks/cpu-scores"
+          element={<CpuBenchmarkScoresPage />}
+        />
+        <Route
+          path="/benchmarks/gpu-scores"
+          element={<GpuBenchmarkScoresPage />}
+        />
         <Route path="/users" element={<PagePlaceholder title="کاربران" />} />
         <Route
           path="/settings"
