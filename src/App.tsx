@@ -4,6 +4,7 @@ import { LoginPage } from "@/pages/login-page";
 import { NotFoundPage } from "@/pages/not-found-page";
 import { PagePlaceholder } from "@/pages/page-placeholder";
 import { BenchmarkDefinitionsPage } from "@/pages/benchmarks/definitions-list-page";
+import { DefaultScalingListPage } from "@/pages/benchmarks/default-scaling-list-page";
 import {
   CpuBenchmarkScoresPage,
   GpuBenchmarkScoresPage,
@@ -55,6 +56,10 @@ export function App() {
         <Route
           path="/benchmarks/gpu-scores"
           element={<GpuBenchmarkScoresPage />}
+        />
+        <Route
+          path="/benchmarks/default-scaling"
+          element={<DefaultScalingListPage />}
         />
         <Route path="/users" element={<PagePlaceholder title="کاربران" />} />
         <Route

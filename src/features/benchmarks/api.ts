@@ -4,6 +4,8 @@ import type {
   BenchmarkListQuery,
   BenchmarkScoreListItem,
   BenchmarkScoreListQuery,
+  DefaultScalingListItem,
+  DefaultScalingListQuery,
   PaginatedResult,
 } from "./types";
 
@@ -31,6 +33,17 @@ function toScoreParams(query: BenchmarkScoreListQuery) {
   };
 }
 
+function toDefaultScalingParams(query: DefaultScalingListQuery) {
+  return {
+    page: query.page,
+    limit: query.limit,
+    resolution: query.resolution,
+    preset: query.preset,
+    sortBy: query.sortBy,
+    sortOrder: query.sortOrder,
+  };
+}
+
 export function fetchAdminBenchmarks(query: BenchmarkListQuery) {
   return apiGet<PaginatedResult<BenchmarkListItem>>(
     "/admin/benchmarks",
@@ -49,5 +62,12 @@ export function fetchAdminGpuBenchmarkScores(query: BenchmarkScoreListQuery) {
   return apiGet<PaginatedResult<BenchmarkScoreListItem>>(
     "/admin/benchmarks/gpu-scores",
     toScoreParams(query),
+  );
+}
+
+export function fetchAdminDefaultScaling(query: DefaultScalingListQuery) {
+  return apiGet<PaginatedResult<DefaultScalingListItem>>(
+    "/admin/benchmarks/default-scaling",
+    toDefaultScalingParams(query),
   );
 }

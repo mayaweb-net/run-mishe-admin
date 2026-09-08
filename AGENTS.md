@@ -30,19 +30,21 @@ Admin benchmark lists:
 - `GET /admin/benchmarks`
 - `GET /admin/benchmarks/cpu-scores`
 - `GET /admin/benchmarks/gpu-scores`
+- `GET /admin/benchmarks/default-scaling`
 
 ## Navigation
 
 Sidebar config: `src/config/routes.tsx`  
 Routes: `src/App.tsx`
 
-Nested sidebar groups use `children` on `AdminRoute` (see **قطعات → CPU / GPU** and **بنچمارک‌ها → تعاریف / اسکور CPU / اسکور GPU**).
+Nested sidebar groups use `children` on `AdminRoute` (see **قطعات → CPU / GPU** and **بنچمارک‌ها → تعاریف / اسکور / Default Scaling**).
 
 Benchmark pages:
 
 - `/benchmarks/definitions`
 - `/benchmarks/cpu-scores`
 - `/benchmarks/gpu-scores`
+- `/benchmarks/default-scaling` (read-only)
 
 ## List pages
 

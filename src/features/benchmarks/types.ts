@@ -75,7 +75,52 @@ export interface BenchmarkScoreListQuery {
   sortOrder?: "asc" | "desc";
 }
 
+export type ScreenResolution =
+  | "R720P"
+  | "R1080P"
+  | "R1440P"
+  | "R2160P"
+  | "UW1440P"
+  | "UW2160P";
+
+export type QualityPreset = "LOW" | "MEDIUM" | "HIGH" | "ULTRA";
+
+export interface DefaultScalingListItem {
+  id: string;
+  resolution: ScreenResolution;
+  preset: QualityPreset;
+  upscaler: string;
+  rayTracing: boolean;
+  multiplier: number;
+  note: string | null;
+}
+
+export interface DefaultScalingListQuery {
+  page?: number;
+  limit?: number;
+  resolution?: ScreenResolution;
+  preset?: QualityPreset;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
 export const hardwareKindLabels: Record<HardwareKind, string> = {
   CPU: "CPU",
   GPU: "GPU",
+};
+
+export const resolutionLabels: Record<ScreenResolution, string> = {
+  R720P: "720p",
+  R1080P: "1080p",
+  R1440P: "1440p",
+  R2160P: "4K",
+  UW1440P: "UW 1440p",
+  UW2160P: "UW 4K",
+};
+
+export const presetLabels: Record<QualityPreset, string> = {
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High",
+  ULTRA: "Ultra",
 };
