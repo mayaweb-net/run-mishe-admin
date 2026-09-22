@@ -239,6 +239,7 @@ export function GameListPage() {
                   <TableHead>حداقل سیستم</TableHead>
                   <TableHead>پیشنهادی</TableHead>
                   <TableHead>Demand</TableHead>
+                  <TableHead>FPS</TableHead>
                   <TableHead>وضعیت</TableHead>
                   <TableHead className="text-end">عملیات</TableHead>
                 </TableRow>
@@ -269,6 +270,28 @@ export function GameListPage() {
                       <RequirementCell summary={game.recommended} />
                     </TableCell>
                     <TableCell>{demandTierLabels[game.demandTier]}</TableCell>
+                    <TableCell className="min-w-36">
+                      {(game.fpsSampleCount ?? 0) === 0 ? (
+                        <Badge variant="outline">بدون نمونه</Badge>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          <Link
+                            to={`/fps-samples?gameId=${game.id}`}
+                            className="text-sm font-medium underline-offset-2 hover:underline"
+                          >
+                            {game.fpsSampleCount.toLocaleString("fa-IR")} نمونه
+                          </Link>
+                          <div className="text-xs text-muted-foreground">
+                            {(game.fpsGpuCount ?? 0).toLocaleString("fa-IR")} GPU
+                          </div>
+                          {game.isCalibrated ? (
+                            <Badge variant="secondary">کالیبره</Badge>
+                          ) : (
+                            <Badge variant="outline">خام</Badge>
+                          )}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {game.isPopular ? (

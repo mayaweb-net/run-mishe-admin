@@ -1,4 +1,5 @@
 import {
+  Activity,
   CalendarDays,
   Cpu,
   Gamepad2,
@@ -40,6 +41,12 @@ export const adminRoutes: AdminRoute[] = [
     href: "/games",
     label: "بازی‌ها",
     icon: Gamepad2,
+    showInSidebar: true,
+  },
+  {
+    href: "/fps-samples",
+    label: "نمونه‌های FPS",
+    icon: Activity,
     showInSidebar: true,
   },
   {

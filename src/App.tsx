@@ -11,6 +11,7 @@ import {
 } from "@/pages/benchmarks/scores-list-page";
 import { GameDetailPage } from "@/pages/games/game-detail-page";
 import { GameListPage } from "@/pages/games/game-list-page";
+import { FpsSampleListPage } from "@/pages/fps/fps-sample-list-page";
 import { CpuListPage } from "@/pages/parts/cpu-list-page";
 import { CpuDetailPage } from "@/pages/parts/cpu-detail-page";
 import { GpuListPage } from "@/pages/parts/gpu-list-page";
@@ -37,6 +38,7 @@ export function App() {
         <Route path="/events" element={<PagePlaceholder title="رویدادها" />} />
         <Route path="/games" element={<GameListPage />} />
         <Route path="/games/:id" element={<GameDetailPage />} />
+        <Route path="/fps-samples" element={<FpsSampleListPage />} />
         <Route path="/parts/cpu" element={<CpuListPage />} />
         <Route path="/parts/cpu/:id" element={<CpuDetailPage />} />
         <Route path="/parts/gpu" element={<GpuListPage />} />

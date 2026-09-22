@@ -45,6 +45,9 @@ export interface GameListItem {
   popularity: number | null;
   quality: DataQuality;
   hasConnectionIssue: boolean;
+  fpsSampleCount: number;
+  fpsGpuCount: number;
+  isCalibrated: boolean;
   minimum: RequirementSummary | null;
   recommended: RequirementSummary | null;
 }
