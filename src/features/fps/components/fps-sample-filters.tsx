@@ -102,6 +102,7 @@ export function FpsSampleFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">همه منابع</SelectItem>
+          <SelectItem value="manual">manual (دستی)</SelectItem>
           <SelectItem value="notebookcheck">notebookcheck</SelectItem>
           <SelectItem value="user">user</SelectItem>
         </SelectContent>

@@ -105,6 +105,31 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(buildApiUrl(path), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    let errorBody: unknown;
+    try {
+      errorBody = await response.json();
+    } catch {
+      errorBody = undefined;
+    }
+
+    throw new ApiError(
+      `Request failed with status ${response.status}`,
+      response.status,
+      errorBody,
+    );
+  }
+
+  return response.json() as Promise<T>;
+}
+
 export async function apiDelete<T>(path: string): Promise<T> {
   const response = await fetch(buildApiUrl(path), { method: "DELETE" });
 

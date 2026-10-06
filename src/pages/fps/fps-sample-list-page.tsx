@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Activity } from "lucide-react";
+import { Activity, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Empty,
   EmptyDescription,
@@ -18,8 +19,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchAdminFpsSamples } from "@/features/fps/api";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  calibrateAdminFpsSamples,
+  deleteAdminFpsSample,
+  fetchAdminFpsSamples,
+} from "@/features/fps/api";
 import { FpsSampleFilters } from "@/features/fps/components/fps-sample-filters";
+import { FpsSampleFormDialog } from "@/features/fps/components/fps-sample-form-dialog";
 import type {
   FpsSampleListItem,
   FpsSampleListQuery,
@@ -28,7 +40,11 @@ import type {
   ScreenResolution,
 } from "@/features/fps/types";
 import { presetLabels, resolutionLabels } from "@/features/fps/types";
+import { DeleteHardwareDialog } from "@/features/hardware/components/delete-hardware-dialog";
 import { PaginationBar } from "@/features/hardware/components/pagination-bar";
+
+const CALIBRATE_TOOLTIP =
+  "از روی نمونه‌های FpsSample برای هر بازی منحنی تخمین (GameProfile) و ضرایب تنظیمات (GameScaling) را می‌سازد. بعد از افزودن/ویرایش دستی یا import، این دکمه را بزن تا تخمین FPS از داده‌های واقعی استفاده کند؛ بازی‌های بدون نمونه کافی روی مسیر بنچمارک می‌مانند.";
 
 const sortOptions = [
   { value: "capturedAt:desc", label: "تاریخ (جدیدتر)" },
@@ -95,6 +111,14 @@ export function FpsSampleListPage() {
     useState<PaginatedResult<FpsSampleListItem> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [editing, setEditing] = useState<FpsSampleListItem | null>(null);
+  const [deleting, setDeleting] = useState<FpsSampleListItem | null>(null);
+  const [calibrating, setCalibrating] = useState(false);
+  const [calibrateMessage, setCalibrateMessage] = useState<string | null>(null);
 
   const updateQuery = useCallback(
     (patch: Partial<FpsSampleListQuery>) => {
@@ -102,6 +126,8 @@ export function FpsSampleListPage() {
     },
     [query, setSearchParams],
   );
+
+  const reload = useCallback(() => setReloadToken((n) => n + 1), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -126,10 +152,79 @@ export function FpsSampleListPage() {
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [query, reloadToken]);
+
+  async function handleDelete() {
+    if (!deleting) return;
+    await deleteAdminFpsSample(deleting.id);
+    setDeleting(null);
+    reload();
+  }
+
+  async function handleCalibrate() {
+    setCalibrating(true);
+    setCalibrateMessage(null);
+    try {
+      const result = await calibrateAdminFpsSamples(
+        query.gameId ? { gameId: query.gameId } : undefined,
+      );
+      setCalibrateMessage(
+        `کالیبراسیون انجام شد: ${result.calibrated.toLocaleString("fa-IR")} بازی کالیبره · ${result.skipped.toLocaleString("fa-IR")} ردشده/بدون نمونه · ${result.rejected.toLocaleString("fa-IR")} رد کیفیت`,
+      );
+      reload();
+    } catch {
+      setCalibrateMessage("کالیبراسیون با خطا مواجه شد.");
+    } finally {
+      setCalibrating(false);
+    }
+  }
 
   return (
+    <TooltipProvider>
     <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={calibrating}
+                onClick={() => void handleCalibrate()}
+              />
+            }
+          >
+            <RefreshCw className={calibrating ? "animate-spin" : undefined} />
+            {calibrating ? "در حال کالیبره..." : "اعمال روی تخمین"}
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            className="max-w-sm text-start leading-relaxed"
+          >
+            {CALIBRATE_TOOLTIP}
+            {query.gameId
+              ? " فقط بازی فیلترشده در URL کالیبره می‌شود."
+              : " همه بازی‌های دارای نمونه پردازش می‌شوند."}
+          </TooltipContent>
+        </Tooltip>
+
+        <Button
+          size="sm"
+          onClick={() => {
+            setFormMode("create");
+            setEditing(null);
+            setFormOpen(true);
+          }}
+        >
+          <Plus />
+          افزودن نمونه
+        </Button>
+      </div>
+
+      {calibrateMessage ? (
+        <p className="text-sm text-muted-foreground">{calibrateMessage}</p>
+      ) : null}
+
       {query.gameId ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Badge variant="secondary">فیلتر بازی</Badge>
@@ -173,7 +268,7 @@ export function FpsSampleListPage() {
               </EmptyMedia>
               <EmptyTitle>نمونه FPS پیدا نشد</EmptyTitle>
               <EmptyDescription>
-                فیلترها را عوض کنید یا crawler را دوباره اجرا کنید.
+                فیلترها را عوض کنید یا نمونه دستی اضافه کنید.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -190,6 +285,7 @@ export function FpsSampleListPage() {
                   <TableHead>اطمینان</TableHead>
                   <TableHead>منبع</TableHead>
                   <TableHead>تاریخ</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -260,6 +356,30 @@ export function FpsSampleListPage() {
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDate(sample.capturedAt)}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="ویرایش"
+                          onClick={() => {
+                            setFormMode("edit");
+                            setEditing(sample);
+                            setFormOpen(true);
+                          }}
+                        >
+                          <Pencil />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="حذف"
+                          onClick={() => setDeleting(sample)}
+                        >
+                          <Trash2 className="text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -275,6 +395,30 @@ export function FpsSampleListPage() {
           </>
         )}
       </div>
+
+      <FpsSampleFormDialog
+        open={formOpen}
+        mode={formMode}
+        sample={editing}
+        initialGameId={query.gameId}
+        onOpenChange={setFormOpen}
+        onSaved={reload}
+      />
+
+      <DeleteHardwareDialog
+        open={deleting != null}
+        title="حذف نمونه FPS"
+        description={
+          deleting
+            ? `نمونه «${deleting.game.name} / ${deleting.gpu.name} / ${resolutionLabels[deleting.resolution]} ${presetLabels[deleting.preset]}» حذف شود؟`
+            : "این نمونه حذف شود؟"
+        }
+        onOpenChange={(open) => {
+          if (!open) setDeleting(null);
+        }}
+        onConfirm={() => void handleDelete()}
+      />
     </div>
+    </TooltipProvider>
   );
 }

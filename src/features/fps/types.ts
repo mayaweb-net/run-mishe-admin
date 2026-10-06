@@ -72,6 +72,67 @@ export interface FpsSampleListQuery {
   sortOrder?: "asc" | "desc";
 }
 
+export interface CreateFpsSampleEntry {
+  resolution: ScreenResolution;
+  preset: QualityPreset;
+  avgFps: number;
+  upscaler?: Upscaler;
+  rayTracing?: boolean;
+  frameGen?: boolean;
+  onePercentLow?: number;
+  ramGb?: number;
+}
+
+export interface CreateFpsSamplesPayload {
+  gameId: string;
+  cpuId: string;
+  gpuId: string;
+  source?: string;
+  sourceUrl?: string;
+  confidence?: number;
+  entries: CreateFpsSampleEntry[];
+}
+
+export interface UpdateFpsSamplePayload {
+  gameId?: string;
+  cpuId?: string;
+  gpuId?: string;
+  resolution?: ScreenResolution;
+  preset?: QualityPreset;
+  upscaler?: Upscaler;
+  rayTracing?: boolean;
+  frameGen?: boolean;
+  ramGb?: number | null;
+  avgFps?: number;
+  onePercentLow?: number | null;
+  source?: string;
+  sourceUrl?: string | null;
+  confidence?: number;
+}
+
+export interface CreateFpsSamplesResult {
+  items: FpsSampleListItem[];
+  created: number;
+  updated: number;
+  source: string;
+}
+
+export interface CalibrateFpsResult {
+  calibrationVersion: number;
+  totalGames: number;
+  calibrated: number;
+  skipped: number;
+  rejected: number;
+  outcomes: Array<{
+    slug: string;
+    name: string;
+    status: string;
+    sampleCount: number;
+    holdoutMape: number | null;
+    reason?: string;
+  }>;
+}
+
 export const resolutionLabels: Record<ScreenResolution, string> = {
   R720P: "720p",
   R1080P: "1080p",

@@ -11,6 +11,7 @@ import {
   Ratio,
   Settings,
   BarChart3,
+  SlidersHorizontal,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -106,6 +107,32 @@ export const adminRoutes: AdminRoute[] = [
     label: "کاربران",
     icon: Users,
     showInSidebar: true,
+  },
+  {
+    id: "customization",
+    label: "شخصی‌سازی",
+    icon: SlidersHorizontal,
+    showInSidebar: true,
+    children: [
+      {
+        href: "/customization/top-games",
+        label: "بازی‌های برتر",
+        icon: Gamepad2,
+        showInSidebar: true,
+      },
+      {
+        href: "/customization/top-cpus",
+        label: "CPUهای برتر",
+        icon: Cpu,
+        showInSidebar: true,
+      },
+      {
+        href: "/customization/top-gpus",
+        label: "GPUهای برتر",
+        icon: Gpu,
+        showInSidebar: true,
+      },
+    ],
   },
   {
     href: "/settings",

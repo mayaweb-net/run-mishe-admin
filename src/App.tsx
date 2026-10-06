@@ -9,6 +9,9 @@ import {
   CpuBenchmarkScoresPage,
   GpuBenchmarkScoresPage,
 } from "@/pages/benchmarks/scores-list-page";
+import { TopCpusPage } from "@/pages/customization/top-cpus-page";
+import { TopGamesPage } from "@/pages/customization/top-games-page";
+import { TopGpusPage } from "@/pages/customization/top-gpus-page";
 import { GameDetailPage } from "@/pages/games/game-detail-page";
 import { GameListPage } from "@/pages/games/game-list-page";
 import { FpsSampleListPage } from "@/pages/fps/fps-sample-list-page";
@@ -64,6 +67,13 @@ export function App() {
           element={<DefaultScalingListPage />}
         />
         <Route path="/users" element={<PagePlaceholder title="کاربران" />} />
+        <Route
+          path="/customization"
+          element={<Navigate to="/customization/top-games" replace />}
+        />
+        <Route path="/customization/top-games" element={<TopGamesPage />} />
+        <Route path="/customization/top-cpus" element={<TopCpusPage />} />
+        <Route path="/customization/top-gpus" element={<TopGpusPage />} />
         <Route
           path="/settings"
           element={<PagePlaceholder title="تنظیمات" />}
