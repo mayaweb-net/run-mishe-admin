@@ -154,3 +154,73 @@ export async function apiDelete<T>(path: string): Promise<T> {
 
   return response.json() as Promise<T>;
 }
+
+export type ApiUploadResult = {
+  path: string;
+  url: string;
+};
+
+export function apiUpload(
+  path: string,
+  file: File,
+  fields: Record<string, string>,
+  options?: {
+    signal?: AbortSignal;
+    onProgress?: (percent: number) => void;
+  },
+): Promise<ApiUploadResult> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append("file", file);
+    for (const [key, value] of Object.entries(fields)) {
+      formData.append(key, value);
+    }
+
+    xhr.open("POST", buildApiUrl(path));
+
+    if (options?.signal) {
+      if (options.signal.aborted) {
+        reject(new DOMException("Aborted", "AbortError"));
+        return;
+      }
+      options.signal.addEventListener("abort", () => {
+        xhr.abort();
+        reject(new DOMException("Aborted", "AbortError"));
+      });
+    }
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.total || !options?.onProgress) return;
+      options.onProgress(Math.round((event.loaded * 100) / event.total));
+    };
+
+    xhr.onload = () => {
+      let body: unknown;
+      try {
+        body = JSON.parse(xhr.responseText) as unknown;
+      } catch {
+        body = undefined;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(body as ApiUploadResult);
+        return;
+      }
+
+      reject(
+        new ApiError(
+          `Request failed with status ${xhr.status}`,
+          xhr.status,
+          body,
+        ),
+      );
+    };
+
+    xhr.onerror = () => {
+      reject(new ApiError("Network error during upload", 0));
+    };
+
+    xhr.send(formData);
+  });
+}

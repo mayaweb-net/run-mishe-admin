@@ -2,12 +2,14 @@ import {
   Activity,
   CalendarDays,
   Cpu,
+  FolderOpen,
   Gamepad2,
   Gauge,
   Gpu,
   HardDrive,
   LayoutDashboard,
   LogOut,
+  Newspaper,
   Ratio,
   Settings,
   BarChart3,
@@ -37,6 +39,26 @@ export const adminRoutes: AdminRoute[] = [
     label: "رویدادها",
     icon: CalendarDays,
     showInSidebar: true,
+  },
+  {
+    id: "blog",
+    label: "بلاگ",
+    icon: Newspaper,
+    showInSidebar: true,
+    children: [
+      {
+        href: "/blog",
+        label: "مقالات",
+        icon: Newspaper,
+        showInSidebar: true,
+      },
+      {
+        href: "/blog/categories",
+        label: "دسته‌بندی‌ها",
+        icon: FolderOpen,
+        showInSidebar: true,
+      },
+    ],
   },
   {
     href: "/games",
@@ -169,6 +191,14 @@ export function routeKey(route: AdminRoute) {
 export function isPathActive(pathname: string, href: string) {
   if (href === "/dashboard") {
     return pathname === "/" || pathname === "/dashboard";
+  }
+
+  if (href === "/blog") {
+    return (
+      pathname === "/blog" ||
+      pathname.startsWith("/blog/new") ||
+      /^\/blog\/[^/]+\/edit$/.test(pathname)
+    );
   }
 
   return pathname === href || pathname.startsWith(`${href}/`);

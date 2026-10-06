@@ -3,6 +3,10 @@ import { MainLayout } from "@/components/layouts/main-layout";
 import { LoginPage } from "@/pages/login-page";
 import { NotFoundPage } from "@/pages/not-found-page";
 import { PagePlaceholder } from "@/pages/page-placeholder";
+import { BlogCategoriesPage } from "@/pages/blog/blog-categories-page";
+import { BlogCategoryFormPage } from "@/pages/blog/blog-category-form-page";
+import { BlogFormPage } from "@/pages/blog/blog-form-page";
+import { BlogListPage } from "@/pages/blog/blog-list-page";
 import { BenchmarkDefinitionsPage } from "@/pages/benchmarks/definitions-list-page";
 import { DefaultScalingListPage } from "@/pages/benchmarks/default-scaling-list-page";
 import {
@@ -39,6 +43,15 @@ export function App() {
           element={<PagePlaceholder title="داشبورد" />}
         />
         <Route path="/events" element={<PagePlaceholder title="رویدادها" />} />
+        <Route path="/blog" element={<BlogListPage />} />
+        <Route path="/blog/new" element={<BlogFormPage />} />
+        <Route path="/blog/:id/edit" element={<BlogFormPage />} />
+        <Route path="/blog/categories" element={<BlogCategoriesPage />} />
+        <Route path="/blog/categories/new" element={<BlogCategoryFormPage />} />
+        <Route
+          path="/blog/categories/:id/edit"
+          element={<BlogCategoryFormPage />}
+        />
         <Route path="/games" element={<GameListPage />} />
         <Route path="/games/:id" element={<GameDetailPage />} />
         <Route path="/fps-samples" element={<FpsSampleListPage />} />
