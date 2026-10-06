@@ -115,7 +115,7 @@
   /* UI */
   --muted: var(--color-neutral-100);
   --muted-foreground: var(--color-neutral-500);
-  --accent: var(--color-purple-600);
+  --accent: var(--color-neutral-100);
   --accent-foreground: var(--color-neutral-900);
   --destructive: #e54b4b;
   --destructive-bg: #fff2f2;
@@ -182,7 +182,7 @@
   --secondary-foreground: var(--color-neutral-50);
   --muted: var(--color-neutral-800);
   --muted-foreground: var(--color-neutral-400);
-  --accent: var(--color-purple-400);
+  --accent: var(--color-neutral-800);
   --accent-foreground: var(--color-neutral-50);
   --destructive: #e54b4b;
   --destructive-bg: color-mix(in oklab, #e54b4b 12%, var(--color-neutral-950));
