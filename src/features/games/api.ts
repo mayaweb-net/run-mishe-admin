@@ -1,4 +1,12 @@
-import { apiDelete, apiGet, apiPatch, apiPost, ApiError, buildApiUrl } from "@/lib/api-client";
+import {
+  apiDelete,
+  apiGet,
+  apiPatch,
+  apiPost,
+  apiUpload,
+  ApiError,
+  buildApiUrl,
+} from "@/lib/api-client";
 import type {
   ApplyRequirementMatchesPayload,
   CreateGamePayload,
@@ -75,6 +83,18 @@ export function fetchUnmatchedRequirementsReport() {
   return apiGet<UnmatchedRequirementsReport>(
     "/admin/games/unmatched-requirements-report",
   );
+}
+
+export async function uploadGameFile(
+  file: File,
+  gameId: string,
+  scope: "cover" | "gallery" | "content" = "gallery",
+) {
+  return apiUpload("admin/uploads", file, {
+    folder: "games",
+    ownerId: gameId,
+    scope,
+  });
 }
 
 export async function downloadUnmatchedRequirementsReport() {

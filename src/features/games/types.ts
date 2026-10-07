@@ -105,6 +105,8 @@ export interface GameDetail {
   genres: string[];
   coverUrl: string | null;
   description: string | null;
+  content: string | null;
+  galleryPaths: string[];
   steamAppId: number | null;
   igdbId: number | null;
   demandTier: DemandTier;
@@ -149,6 +151,8 @@ export type UpdateGamePayload = Partial<
     | "genres"
     | "coverUrl"
     | "description"
+    | "content"
+    | "galleryPaths"
     | "steamAppId"
     | "igdbId"
     | "demandTier"
@@ -165,7 +169,10 @@ export type UpdateGamePayload = Partial<
   >;
 };
 
-export type CreateGamePayload = UpdateGamePayload & Pick<GameDetail, "name">;
+export type CreateGamePayload = UpdateGamePayload &
+  Pick<GameDetail, "name"> & {
+    id?: string;
+  };
 
 export type RequirementMatchSource = "exact" | "search";
 

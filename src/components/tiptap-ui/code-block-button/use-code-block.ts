@@ -2,18 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { type Editor } from "@tiptap/react"
-import { NodeSelection, TextSelection } from "@tiptap/pm/state"
 
 // --- Hooks ---
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 
 // --- Lib ---
 import {
-  findNodePosition,
-  getSelectedBlockNodes,
   isNodeInSchema,
   isNodeTypeSelected,
-  isValidPosition,
   selectionWithinConvertibleTypes,
 } from "@/lib/tiptap-utils"
 
@@ -88,80 +84,7 @@ export function toggleCodeBlock(editor: Editor | null): boolean {
   if (!editor || !editor.isEditable) return false
   if (!canToggle(editor)) return false
 
-  try {
-    const view = editor.view
-    let state = view.state
-    let tr = state.tr
-
-    const blocks = getSelectedBlockNodes(editor)
-
-    // In case a selection contains multiple blocks, we only allow
-    // toggling to nide if there's exactly one block selected
-    // we also dont block the canToggle since it will fall back to the bottom logic
-    const isPossibleToTurnInto =
-      selectionWithinConvertibleTypes(editor, [
-        "paragraph",
-        "heading",
-        "bulletList",
-        "orderedList",
-        "taskList",
-        "blockquote",
-        "codeBlock",
-      ]) && blocks.length === 1
-
-    // No selection, find the the cursor position
-    if (
-      (state.selection.empty || state.selection instanceof TextSelection) &&
-      isPossibleToTurnInto
-    ) {
-      const pos = findNodePosition({
-        editor,
-        node: state.selection.$anchor.node(1),
-      })?.pos
-      if (!isValidPosition(pos)) return false
-
-      tr = tr.setSelection(NodeSelection.create(state.doc, pos))
-      view.dispatch(tr)
-      state = view.state
-    }
-
-    const selection = state.selection
-
-    let chain = editor.chain().focus()
-
-    // Handle NodeSelection
-    if (selection instanceof NodeSelection) {
-      const firstChild = selection.node.firstChild?.firstChild
-      const lastChild = selection.node.lastChild?.lastChild
-
-      const from = firstChild
-        ? selection.from + firstChild.nodeSize
-        : selection.from + 1
-
-      const to = lastChild
-        ? selection.to - lastChild.nodeSize
-        : selection.to - 1
-
-      const resolvedFrom = state.doc.resolve(from)
-      const resolvedTo = state.doc.resolve(to)
-
-      chain = chain
-        .setTextSelection(TextSelection.between(resolvedFrom, resolvedTo))
-        .clearNodes()
-    }
-
-    const toggle = editor.isActive("codeBlock")
-      ? chain.setNode("paragraph")
-      : chain.toggleNode("codeBlock", "paragraph")
-
-    toggle.run()
-
-    editor.chain().focus().selectTextblockEnd().run()
-
-    return true
-  } catch {
-    return false
-  }
+  return editor.chain().focus().toggleCodeBlock().run()
 }
 
 /**

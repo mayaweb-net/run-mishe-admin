@@ -62,6 +62,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       [shortcutKeys]
     )
 
+    const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
+      // Keep the editor selection when clicking toolbar controls.
+      event.preventDefault()
+      props.onMouseDown?.(event)
+    }
+
     if (!tooltip || !showTooltip) {
       return (
         <button
@@ -71,6 +77,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           data-style={variant}
           data-size={size}
           {...props}
+          onMouseDown={handleMouseDown}
         >
           {children}
         </button>
@@ -86,6 +93,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           data-style={variant}
           data-size={size}
           {...props}
+          onMouseDown={handleMouseDown}
         >
           {children}
         </TooltipTrigger>

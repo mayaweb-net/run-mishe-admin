@@ -20,7 +20,6 @@ export const gameFieldSections: Array<{
       { key: "name", label: "نام", type: "text" },
       { key: "nameFa", label: "نام فارسی", type: "text" },
       { key: "slug", label: "Slug", type: "text" },
-      { key: "coverUrl", label: "Cover URL", type: "text" },
     ],
   },
   {
@@ -31,7 +30,7 @@ export const gameFieldSections: Array<{
       { key: "engine", label: "موتور", type: "text" },
       { key: "releaseDate", label: "تاریخ انتشار", type: "date" },
       { key: "genres", label: "ژانرها", type: "array" },
-      { key: "description", label: "توضیحات", type: "text" },
+      { key: "description", label: "توضیحات کوتاه", type: "text" },
     ],
   },
   {

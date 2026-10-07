@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, Link2, Pencil, Save, Trash2, X } from "lucide-react";
+import { ArrowRight, Link2, Pencil, Save, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -8,12 +8,18 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
+import { getFileUrl } from "@/features/blog/api";
 import {
   createAdminGame,
   deleteAdminGame,
   fetchAdminGame,
   updateAdminGame,
+  uploadGameFile,
 } from "@/features/games/api";
 import { gameFieldSections } from "@/features/games/game-fields";
 import { GameRequirementsEditor } from "@/features/games/components/game-requirements-editor";
@@ -33,11 +39,16 @@ import type {
 
 const CREATE_ID = "new";
 
-const editableKeys = new Set<string>(
-  gameFieldSections.flatMap((section) =>
-    section.fields.filter((field) => field.type !== "readonly").map((field) => field.key),
+const editableKeys = new Set<string>([
+  ...gameFieldSections.flatMap((section) =>
+    section.fields
+      .filter((field) => field.type !== "readonly")
+      .map((field) => field.key),
   ),
-);
+  "content",
+  "galleryPaths",
+  "coverUrl",
+]);
 
 function createDefaultDraft(): Record<string, unknown> {
   return {
@@ -49,22 +60,36 @@ function createDefaultDraft(): Record<string, unknown> {
     isPopular: false,
     isPublished: true,
     quality: "IMPORTED",
+    description: "",
+    content: "",
+    coverUrl: "",
+    galleryPaths: [] as string[],
   };
 }
 
 function toDraft(game: GameDetail): Record<string, unknown> {
-  return { ...game };
+  return {
+    ...game,
+    content: game.content ?? "",
+    description: game.description ?? "",
+    coverUrl: game.coverUrl ?? "",
+    galleryPaths: game.galleryPaths ?? [],
+  };
 }
 
 function toPayload(
   draft: Record<string, unknown>,
   requirements: GameRequirementInput[],
+  createId?: string,
 ): CreateGamePayload {
   const payload = {} as CreateGamePayload;
   for (const key of editableKeys) {
     payload[key as keyof CreateGamePayload] = draft[key] as never;
   }
   payload.requirements = toRequirementsPayload(requirements);
+  if (createId) {
+    payload.id = createId;
+  }
   return payload;
 }
 
@@ -72,6 +97,9 @@ export function GameDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isCreateMode = id === CREATE_ID;
+  const draftIdRef = useRef(crypto.randomUUID());
+  const gameUploadId = isCreateMode ? draftIdRef.current : (id ?? draftIdRef.current);
+
   const [item, setItem] = useState<GameDetail | null>(null);
   const [draft, setDraft] = useState<Record<string, unknown>>(createDefaultDraft);
   const [requirementsDraft, setRequirementsDraft] = useState<GameRequirementInput[]>(
@@ -84,6 +112,8 @@ export function GameDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [matchOpen, setMatchOpen] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
 
   useEffect(() => {
     if (!id || isCreateMode) {
@@ -131,7 +161,11 @@ export function GameDetailPage() {
     setError(null);
 
     try {
-      const payload = toPayload(draft, requirementsDraft);
+      const payload = toPayload(
+        draft,
+        requirementsDraft,
+        isCreateMode ? draftIdRef.current : undefined,
+      );
 
       if (isCreateMode) {
         const created = await createAdminGame(payload);
@@ -171,6 +205,53 @@ export function GameDetailPage() {
     }
   }
 
+  async function handleCoverUpload(file: File | null) {
+    if (!file || !editing) return;
+    setCoverUploading(true);
+    setError(null);
+    try {
+      const uploaded = await uploadGameFile(file, gameUploadId, "cover");
+      setDraft((current) => ({ ...current, coverUrl: uploaded.path }));
+    } catch {
+      setError("آپلود کاور با خطا مواجه شد.");
+    } finally {
+      setCoverUploading(false);
+    }
+  }
+
+  async function handleGalleryUpload(files: FileList | null) {
+    if (!files?.length || !editing) return;
+    setGalleryUploading(true);
+    setError(null);
+    try {
+      const uploadedPaths: string[] = [];
+      for (const file of Array.from(files)) {
+        const uploaded = await uploadGameFile(file, gameUploadId, "gallery");
+        uploadedPaths.push(uploaded.path);
+      }
+      setDraft((current) => ({
+        ...current,
+        galleryPaths: [
+          ...((current.galleryPaths as string[]) ?? []),
+          ...uploadedPaths,
+        ],
+      }));
+    } catch {
+      setError("آپلود گالری با خطا مواجه شد.");
+    } finally {
+      setGalleryUploading(false);
+    }
+  }
+
+  function removeGalleryPath(path: string) {
+    setDraft((current) => ({
+      ...current,
+      galleryPaths: ((current.galleryPaths as string[]) ?? []).filter(
+        (item) => item !== path,
+      ),
+    }));
+  }
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -196,9 +277,9 @@ export function GameDetailPage() {
   }
 
   const title = isCreateMode ? "بازی جدید" : item!.name;
-  const subtitle = isCreateMode
-    ? "اطلاعات بازی را وارد کنید"
-    : item!.slug;
+  const subtitle = isCreateMode ? "اطلاعات بازی را وارد کنید" : item!.slug;
+  const coverUrl = getFileUrl(String(draft.coverUrl || "")) ?? undefined;
+  const galleryPaths = (draft.galleryPaths as string[]) ?? [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -266,10 +347,10 @@ export function GameDetailPage() {
         </div>
       ) : null}
 
-      {!isCreateMode && item?.coverUrl ? (
+      {coverUrl ? (
         <img
-          src={item.coverUrl}
-          alt={item.name}
+          src={coverUrl}
+          alt={title}
           className="h-40 w-72 rounded-xl border object-cover"
         />
       ) : null}
@@ -288,6 +369,114 @@ export function GameDetailPage() {
             />
           </section>
         ))}
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold">کاور و گالری</h2>
+          <div className="space-y-2">
+            <Label htmlFor="game-cover">کاور</Label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Input
+                id="game-cover"
+                type="file"
+                accept="image/*"
+                disabled={!editing || coverUploading}
+                onChange={(event) =>
+                  void handleCoverUpload(event.target.files?.[0] ?? null)
+                }
+              />
+              {coverUploading ? <Spinner className="size-4" /> : null}
+            </div>
+            {draft.coverUrl ? (
+              <p className="text-xs text-muted-foreground" dir="ltr">
+                {String(draft.coverUrl)}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="game-gallery">گالری تصاویر</Label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Input
+                id="game-gallery"
+                type="file"
+                accept="image/*"
+                multiple
+                disabled={!editing || galleryUploading}
+                onChange={(event) => void handleGalleryUpload(event.target.files)}
+              />
+              {galleryUploading ? (
+                <Spinner className="size-4" />
+              ) : (
+                <Upload className="size-4 text-muted-foreground" />
+              )}
+            </div>
+            {galleryPaths.length > 0 ? (
+              <ul className="grid gap-3 sm:grid-cols-3">
+                {galleryPaths.map((path) => {
+                  const url = getFileUrl(path);
+                  return (
+                    <li key={path} className="space-y-2 rounded-xl border p-2">
+                      {url ? (
+                        <img
+                          src={url}
+                          alt=""
+                          className="aspect-video w-full rounded-lg object-cover"
+                        />
+                      ) : null}
+                      {editing ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeGalleryPath(path)}
+                        >
+                          حذف
+                        </Button>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                هنوز تصویری در گالری نیست.
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border bg-card">
+        <div className="border-b px-4 py-3 text-sm font-semibold">
+          توضیحات کامل
+        </div>
+        <div className="p-3">
+          {editing ? (
+            <div className="overflow-hidden rounded-xl bg-white">
+              <SimpleEditor
+                value={String(draft.content ?? "")}
+                onChange={(value) =>
+                  setDraft((current) => ({ ...current, content: value }))
+                }
+                uploadTarget={{
+                  folder: "games",
+                  ownerId: gameUploadId,
+                  scope: "content",
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              className="article-html-content rounded-xl bg-white p-4"
+              dangerouslySetInnerHTML={{
+                __html: String(
+                  draft.content ||
+                    "<p class='text-muted-foreground'>محتوایی ثبت نشده</p>",
+                ),
+              }}
+            />
+          )}
+        </div>
       </div>
 
       <div className="space-y-3 rounded-2xl border bg-card p-4">

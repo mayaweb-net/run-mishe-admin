@@ -365,18 +365,29 @@ export function selectionWithinConvertibleTypes(
  * @param abortSignal Optional AbortSignal for cancelling the upload
  * @returns Promise resolving to the URL of the uploaded image
  */
+export type EditorUploadTarget = {
+  folder: "articles" | "games"
+  ownerId: string
+  scope?: "cover" | "content" | "gallery"
+}
+
 export const handleImageUpload = async (
   file: File,
   onProgress?: (event: { progress: number }) => void,
   abortSignal?: AbortSignal,
-  articleId?: string
+  target?: EditorUploadTarget | string
 ): Promise<string> => {
   if (!file) {
     throw new Error("No file provided")
   }
 
-  if (!articleId) {
-    throw new Error("Article id is required for editor uploads")
+  const uploadTarget: EditorUploadTarget | undefined =
+    typeof target === "string"
+      ? { folder: "articles", ownerId: target, scope: "content" }
+      : target
+
+  if (!uploadTarget?.ownerId) {
+    throw new Error("Upload owner id is required for editor uploads")
   }
 
   if (file.size > MAX_FILE_SIZE) {
@@ -389,9 +400,9 @@ export const handleImageUpload = async (
     "admin/uploads",
     file,
     {
-      folder: "articles",
-      ownerId: articleId,
-      scope: "content",
+      folder: uploadTarget.folder,
+      ownerId: uploadTarget.ownerId,
+      scope: uploadTarget.scope ?? "content",
     },
     {
       signal: abortSignal,
@@ -590,42 +601,57 @@ export function getSelectedNodesOfType(
 ): NodeWithPos[] {
   const results: NodeWithPos[] = []
   const allowed = new Set(allowedNodeTypes)
+  const seen = new Set<number>()
+
+  const push = (node: PMNode, pos: number) => {
+    if (!allowed.has(node.type.name) || seen.has(pos)) return
+    seen.add(pos)
+    results.push({ node, pos })
+  }
 
   if (selection instanceof CellSelection) {
     selection.forEachCell((node: PMNode, pos: number) => {
-      if (allowed.has(node.type.name)) {
-        results.push({ node, pos })
-      }
+      push(node, pos)
     })
     return results
   }
 
   if (selection instanceof NodeSelection) {
     const { node, from: pos } = selection
-    if (node && allowed.has(node.type.name)) {
-      results.push({ node, pos })
-    }
+    if (node) push(node, pos)
     return results
   }
 
-  const { $anchor } = selection
-  const cell = cellAround($anchor)
+  const { $from, $to, empty } = selection
+  const cell = cellAround($from)
 
   if (cell) {
-    const cellNode = selection.$anchor.doc.nodeAt(cell.pos)
-    if (cellNode && allowed.has(cellNode.type.name)) {
-      results.push({ node: cellNode, pos: cell.pos })
+    const cellNode = $from.doc.nodeAt(cell.pos)
+    if (cellNode) {
+      push(cellNode, cell.pos)
       return results
     }
   }
 
-  // Fallback: find parent nodes of allowed types
-  const parentNode = findParentNodeClosestToPos($anchor, (node) =>
+  // Collect every allowed block intersecting the selection range
+  // (not only the anchor parent — that missed multi-block selections).
+  if (!empty && $from.pos !== $to.pos) {
+    selection.$from.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
+      if (allowed.has(node.type.name)) {
+        push(node, pos)
+        return false
+      }
+      return true
+    })
+    if (results.length) return results
+  }
+
+  const parentNode = findParentNodeClosestToPos($from, (node) =>
     allowed.has(node.type.name)
   )
 
   if (parentNode) {
-    results.push({ node: parentNode.node, pos: parentNode.pos })
+    push(parentNode.node, parentNode.pos)
   }
 
   return results
@@ -645,15 +671,17 @@ export function getSelectedBlockNodes(editor: Editor): PMNode[] {
   const blocks: PMNode[] = []
   const seen = new Set<number>()
 
+  // Prefer textblocks so nested list items / paragraphs are counted
+  // individually instead of collapsing to a single top-level wrapper.
   doc.nodesBetween(from, to, (node, pos) => {
-    if (!node.isBlock) return
-
-    if (!seen.has(pos)) {
-      seen.add(pos)
-      blocks.push(node)
+    if (node.isTextblock) {
+      if (!seen.has(pos)) {
+        seen.add(pos)
+        blocks.push(node)
+      }
+      return false
     }
-
-    return false
+    return true
   })
 
   return blocks

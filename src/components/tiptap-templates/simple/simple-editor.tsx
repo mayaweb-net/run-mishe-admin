@@ -334,23 +334,47 @@ function ImageAltPopover({ editor }: ImageAltPopoverProps) {
 interface SimpleEditorProps {
   value?: string;
   onChange?: (value: string) => void;
-  articleId: string;
+  /** @deprecated Prefer uploadTarget */
+  articleId?: string;
+  uploadTarget?: {
+    folder: 'articles' | 'games';
+    ownerId: string;
+    scope?: 'cover' | 'content' | 'gallery';
+  };
 }
 
-export function SimpleEditor({ value = '', onChange, articleId }: SimpleEditorProps) {
+export function SimpleEditor({
+  value = '',
+  onChange,
+  articleId,
+  uploadTarget,
+}: SimpleEditorProps) {
   const isMobile = useIsBreakpoint();
   const { height } = useWindowSize();
   const [mobileView, setMobileView] = useState<'main' | 'highlighter' | 'link'>('main');
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const articleIdRef = useRef(articleId);
-  articleIdRef.current = articleId;
+  const uploadTargetRef = useRef(
+    uploadTarget ??
+      (articleId
+        ? { folder: 'articles' as const, ownerId: articleId, scope: 'content' as const }
+        : undefined),
+  );
+  uploadTargetRef.current =
+    uploadTarget ??
+    (articleId
+      ? { folder: 'articles' as const, ownerId: articleId, scope: 'content' as const }
+      : undefined);
+
+  const lastEmittedHtmlRef = useRef(value);
 
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
     textDirection: 'rtl',
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
+      const html = editor.getHTML();
+      lastEmittedHtmlRef.current = html;
+      onChange?.(html);
     },
     editorProps: {
       attributes: {
@@ -385,7 +409,7 @@ export function SimpleEditor({ value = '', onChange, articleId }: SimpleEditorPr
         maxSize: MAX_FILE_SIZE,
         limit: 3,
         upload: (file, onProgress, abortSignal) =>
-          handleImageUpload(file, onProgress, abortSignal, articleIdRef.current),
+          handleImageUpload(file, onProgress, abortSignal, uploadTargetRef.current),
         onError: (error) => console.error('Upload failed:', error),
       }),
     ],
@@ -393,8 +417,17 @@ export function SimpleEditor({ value = '', onChange, articleId }: SimpleEditorPr
   });
 
   useEffect(() => {
-    if (!editor || editor.getHTML() === value) return;
+    if (!editor) return;
+    // Skip echo updates from our own onChange — setContent resets selection
+    // and can make toolbar actions appear to apply to the whole document.
+    if (value === lastEmittedHtmlRef.current) return;
+    if (editor.getHTML() === value) {
+      lastEmittedHtmlRef.current = value;
+      return;
+    }
+    if (editor.isFocused) return;
     editor.commands.setContent(value, { emitUpdate: false });
+    lastEmittedHtmlRef.current = value;
   }, [editor, value]);
 
   const rect = useCursorVisibility({
