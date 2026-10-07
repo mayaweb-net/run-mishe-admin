@@ -1,4 +1,10 @@
-import { apiDelete, apiGet, apiPatch, apiPost } from "@/lib/api-client";
+import {
+  apiDelete,
+  apiGet,
+  apiPatch,
+  apiPost,
+  apiUpload,
+} from "@/lib/api-client";
 import type {
   CpuDetail,
   CpuListItem,
@@ -65,6 +71,18 @@ export function updateAdminGpu(id: string, payload: UpdateGpuPayload) {
 
 export function deleteAdminCpu(id: string) {
   return apiDelete<{ id: string }>(`/admin/hardware/cpus/${id}`);
+}
+
+export async function uploadCpuFile(
+  file: File,
+  cpuId: string,
+  scope: "cover" | "content" = "cover",
+) {
+  return apiUpload("admin/uploads", file, {
+    folder: "cpus",
+    ownerId: cpuId,
+    scope,
+  });
 }
 
 export function deleteAdminGpu(id: string) {

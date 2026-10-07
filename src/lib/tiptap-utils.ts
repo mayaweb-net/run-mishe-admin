@@ -366,7 +366,7 @@ export function selectionWithinConvertibleTypes(
  * @returns Promise resolving to the URL of the uploaded image
  */
 export type EditorUploadTarget = {
-  folder: "articles" | "games"
+  folder: "articles" | "games" | "cpus"
   ownerId: string
   scope?: "cover" | "content" | "gallery"
 }

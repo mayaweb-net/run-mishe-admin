@@ -47,6 +47,7 @@ export const cpuFieldSections: Array<{
       { key: "architecture", label: "معماری", type: "text" },
       { key: "socket", label: "سوکت", type: "text" },
       { key: "releaseDate", label: "تاریخ عرضه", type: "date" },
+      { key: "description", label: "توضیحات کوتاه", type: "text" },
     ],
   },
   {

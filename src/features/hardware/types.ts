@@ -78,6 +78,9 @@ export interface CpuDetail {
   pcieVersion: number | null;
   pcieLanes: number | null;
   instructionSets: string[];
+  coverUrl: string | null;
+  description: string | null;
+  content: string | null;
   singleThreadIndex: number | null;
   multiThreadIndex: number | null;
   gamingIndex: number | null;
@@ -122,6 +125,9 @@ export type UpdateCpuPayload = Partial<
     | "pcieVersion"
     | "pcieLanes"
     | "instructionSets"
+    | "coverUrl"
+    | "description"
+    | "content"
     | "msrpUsd"
     | "quality"
     | "sourceName"
@@ -130,7 +136,9 @@ export type UpdateCpuPayload = Partial<
 >;
 
 export type CreateCpuPayload = UpdateCpuPayload &
-  Pick<CpuDetail, "name" | "vendor" | "performanceCores" | "threads">;
+  Pick<CpuDetail, "name" | "vendor" | "performanceCores" | "threads"> & {
+    id?: string;
+  };
 
 export interface GpuListItem {
   id: string;
