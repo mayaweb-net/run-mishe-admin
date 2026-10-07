@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowRight, Pencil, Save, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,18 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
+import { getFileUrl } from "@/features/blog/api";
 import {
   createAdminGpu,
   deleteAdminGpu,
   fetchAdminGpu,
   updateAdminGpu,
+  uploadGpuFile,
 } from "@/features/hardware/api";
 import { gpuFieldSections } from "@/features/hardware/gpu-fields";
 import { DeleteHardwareDialog } from "@/features/hardware/components/delete-hardware-dialog";
@@ -22,11 +28,15 @@ import type { CreateGpuPayload, GpuDetail } from "@/features/hardware/types";
 
 const CREATE_ID = "new";
 
-const editableKeys = new Set<string>(
-  gpuFieldSections.flatMap((section) =>
-    section.fields.filter((field) => field.type !== "readonly").map((field) => field.key),
+const editableKeys = new Set<string>([
+  ...gpuFieldSections.flatMap((section) =>
+    section.fields
+      .filter((field) => field.type !== "readonly")
+      .map((field) => field.key),
   ),
-);
+  "content",
+  "coverUrl",
+]);
 
 function createDefaultDraft(): Record<string, unknown> {
   return {
@@ -37,17 +47,31 @@ function createDefaultDraft(): Record<string, unknown> {
     isWorkstation: false,
     supportsRayTracing: false,
     quality: "IMPORTED",
+    coverUrl: "",
+    description: "",
+    content: "",
   };
 }
 
 function toDraft(gpu: GpuDetail): Record<string, unknown> {
-  return { ...gpu };
+  return {
+    ...gpu,
+    coverUrl: gpu.coverUrl ?? "",
+    description: gpu.description ?? "",
+    content: gpu.content ?? "",
+  };
 }
 
-function toPayload(draft: Record<string, unknown>): CreateGpuPayload {
+function toPayload(
+  draft: Record<string, unknown>,
+  createId?: string,
+): CreateGpuPayload {
   const payload = {} as CreateGpuPayload;
   for (const key of editableKeys) {
     payload[key as keyof CreateGpuPayload] = draft[key] as never;
+  }
+  if (createId) {
+    payload.id = createId;
   }
   return payload;
 }
@@ -56,6 +80,11 @@ export function GpuDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isCreateMode = id === CREATE_ID;
+  const draftIdRef = useRef(crypto.randomUUID());
+  const gpuUploadId = isCreateMode
+    ? draftIdRef.current
+    : (id ?? draftIdRef.current);
+
   const [item, setItem] = useState<GpuDetail | null>(null);
   const [draft, setDraft] = useState<Record<string, unknown>>(createDefaultDraft);
   const [loading, setLoading] = useState(!isCreateMode);
@@ -64,6 +93,7 @@ export function GpuDetailPage() {
   const [editing, setEditing] = useState(isCreateMode);
   const [error, setError] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
 
   useEffect(() => {
     if (!id || isCreateMode) {
@@ -109,7 +139,10 @@ export function GpuDetailPage() {
     setError(null);
 
     try {
-      const payload = toPayload(draft);
+      const payload = toPayload(
+        draft,
+        isCreateMode ? draftIdRef.current : undefined,
+      );
 
       if (isCreateMode) {
         const created = await createAdminGpu(payload);
@@ -124,7 +157,9 @@ export function GpuDetailPage() {
       setDraft(toDraft(updated));
       setEditing(false);
     } catch {
-      setError(isCreateMode ? "ایجاد GPU با خطا مواجه شد." : "ذخیره تغییرات با خطا مواجه شد.");
+      setError(
+        isCreateMode ? "ایجاد GPU با خطا مواجه شد." : "ذخیره تغییرات با خطا مواجه شد.",
+      );
     } finally {
       setSaving(false);
     }
@@ -143,6 +178,20 @@ export function GpuDetailPage() {
       setError("حذف GPU با خطا مواجه شد.");
       setDeleting(false);
       setDeleteOpen(false);
+    }
+  }
+
+  async function handleCoverUpload(file: File | null) {
+    if (!file || !editing) return;
+    setCoverUploading(true);
+    setError(null);
+    try {
+      const uploaded = await uploadGpuFile(file, gpuUploadId, "cover");
+      setDraft((current) => ({ ...current, coverUrl: uploaded.path }));
+    } catch {
+      setError("آپلود کاور با خطا مواجه شد.");
+    } finally {
+      setCoverUploading(false);
     }
   }
 
@@ -174,12 +223,18 @@ export function GpuDetailPage() {
   const subtitle = isCreateMode
     ? "فیلدهای الزامی را پر کنید و ذخیره بزنید"
     : item!.slug;
+  const coverUrl = getFileUrl(String(draft.coverUrl || "")) ?? undefined;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" nativeButton={false} render={<Link to="/parts/gpu" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link to="/parts/gpu" />}
+          >
             <ArrowRight />
             بازگشت
           </Button>
@@ -221,7 +276,11 @@ export function GpuDetailPage() {
                 <Pencil />
                 ویرایش
               </Button>
-              <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setDeleteOpen(true)}
+              >
                 <Trash2 />
                 حذف
               </Button>
@@ -234,6 +293,14 @@ export function GpuDetailPage() {
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
+      ) : null}
+
+      {coverUrl ? (
+        <img
+          src={coverUrl}
+          alt={title}
+          className="h-40 w-72 rounded-xl border object-cover"
+        />
       ) : null}
 
       <div className="space-y-6 rounded-2xl border bg-card p-4">
@@ -250,6 +317,70 @@ export function GpuDetailPage() {
             />
           </section>
         ))}
+
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold">کاور</h2>
+          <Label htmlFor="gpu-cover">تصویر کاور</Label>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Input
+              id="gpu-cover"
+              type="file"
+              accept="image/*"
+              disabled={!editing || coverUploading}
+              onChange={(event) =>
+                void handleCoverUpload(event.target.files?.[0] ?? null)
+              }
+            />
+            {coverUploading ? <Spinner className="size-4" /> : null}
+          </div>
+          {draft.coverUrl ? (
+            <p className="text-xs text-muted-foreground" dir="ltr">
+              {String(draft.coverUrl)}
+            </p>
+          ) : null}
+        </section>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border bg-card">
+        <div className="border-b px-4 py-3 text-sm font-semibold">
+          توضیحات کامل
+        </div>
+        <div className="border-b px-4 py-2 text-xs leading-relaxed text-muted-foreground">
+          می‌توانید از متغیرهایی مثل{" "}
+          <code dir="ltr">{`{{vramGb}}`}</code>،{" "}
+          <code dir="ltr">{`{{memoryType}}`}</code>،{" "}
+          <code dir="ltr">{`{{tdpWatt}}`}</code>،{" "}
+          <code dir="ltr">{`{{boostClockMhz}}`}</code>،{" "}
+          <code dir="ltr">{`{{gamingIndex}}`}</code> در متن استفاده کنید تا
+          هنگام نمایش، با داده واقعی جایگزین شوند.
+        </div>
+        <div className="p-3">
+          {editing ? (
+            <div className="overflow-hidden rounded-xl bg-white">
+              <SimpleEditor
+                value={String(draft.content ?? "")}
+                onChange={(value) =>
+                  setDraft((current) => ({ ...current, content: value }))
+                }
+                uploadTarget={{
+                  folder: "gpus",
+                  ownerId: gpuUploadId,
+                  scope: "content",
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              className="article-html-content rounded-xl bg-white p-4"
+              dangerouslySetInnerHTML={{
+                __html: String(
+                  draft.content ||
+                    "<p class='text-muted-foreground'>محتوایی ثبت نشده</p>",
+                ),
+              }}
+            />
+          )}
+        </div>
       </div>
 
       {!isCreateMode && item ? (

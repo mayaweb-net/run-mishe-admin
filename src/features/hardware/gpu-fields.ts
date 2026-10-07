@@ -47,6 +47,7 @@ export const gpuFieldSections: Array<{
       { key: "codename", label: "Codename", type: "text" },
       { key: "chip", label: "Chip", type: "text" },
       { key: "releaseDate", label: "تاریخ عرضه", type: "date" },
+      { key: "description", label: "توضیحات کوتاه", type: "text" },
     ],
   },
   {

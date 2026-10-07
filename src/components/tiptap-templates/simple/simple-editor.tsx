@@ -337,7 +337,7 @@ interface SimpleEditorProps {
   /** @deprecated Prefer uploadTarget */
   articleId?: string;
   uploadTarget?: {
-    folder: 'articles' | 'games' | 'cpus';
+    folder: 'articles' | 'games' | 'cpus' | 'gpus';
     ownerId: string;
     scope?: 'cover' | 'content' | 'gallery';
   };

@@ -204,6 +204,9 @@ export interface GpuDetail {
   vulkanVersion: string | null;
   openglVersion: string | null;
   maxDisplays: number | null;
+  coverUrl: string | null;
+  description: string | null;
+  content: string | null;
   gamingIndex: number | null;
   computeIndex: number | null;
   indexCalculatedAt: string | null;
@@ -240,6 +243,9 @@ export type UpdateGpuPayload = Partial<
     | "formFactor"
     | "isWorkstation"
     | "supportsRayTracing"
+    | "coverUrl"
+    | "description"
+    | "content"
     | "msrpUsd"
     | "quality"
     | "sourceName"
@@ -248,7 +254,9 @@ export type UpdateGpuPayload = Partial<
 >;
 
 export type CreateGpuPayload = UpdateGpuPayload &
-  Pick<GpuDetail, "name" | "vendor">;
+  Pick<GpuDetail, "name" | "vendor"> & {
+    id?: string;
+  };
 
 export interface HardwareListQuery {
   page?: number;

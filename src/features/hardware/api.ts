@@ -85,6 +85,18 @@ export async function uploadCpuFile(
   });
 }
 
+export async function uploadGpuFile(
+  file: File,
+  gpuId: string,
+  scope: "cover" | "content" = "cover",
+) {
+  return apiUpload("admin/uploads", file, {
+    folder: "gpus",
+    ownerId: gpuId,
+    scope,
+  });
+}
+
 export function deleteAdminGpu(id: string) {
   return apiDelete<{ id: string }>(`/admin/hardware/gpus/${id}`);
 }
